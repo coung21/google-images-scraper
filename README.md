@@ -5,7 +5,7 @@ A tool to scraping images from google with provided keywords.
 
 ## Pre-requisites
 
-1.Google Chrome
+1.Google Chrome<br>
 2.Python Packages (requests, selenium, unidecode, python-dotenv)
 
 ## Installation
@@ -44,6 +44,6 @@ Step 3: Run the following cmd:
 ```bash
 py script.py --limit {NUMBERS_OF_IMAGES}
 ```
-Note: `NUMBERS_OF_IMAGES` is the number of images you want to retrieve for each keyword.
+Note: `NUMBERS_OF_IMAGES` is the number of images you want to retrieve for each keyword.<br>
 
 ***If you find this tool useful, please give this repo 1 star. Thank you very much ❤️***
