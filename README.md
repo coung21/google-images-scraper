@@ -5,8 +5,8 @@ A tool to scraping images from google with provided keywords.
 
 ## Pre-requisites
 
-1.Google Chrome<br>
-2.Python Packages (requests, selenium, unidecode, python-dotenv)
+1. Google Chrome<br>
+2. Python Packages (requests, selenium, unidecode, python-dotenv)
 
 ## Installation
 
@@ -28,7 +28,7 @@ Use [pip](https://pip.pypa.io/en/stable/installation/) package manager to instal
 
 ## Usage
 
-Step 1: Create `.env` then add your folder path to scraping:    
+Step 1: Create `.env` file then add your folder path to scraping:    
 ```env
 FOLDER_PATH={your/folder/path}
 ```
