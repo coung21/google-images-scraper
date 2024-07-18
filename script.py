@@ -25,13 +25,12 @@ if not os.path.exists(FOLDER_PATH):
     os.makedirs(FOLDER_PATH)
 
 def check_url_extension(url):
-    for index, ext in enumerate(IMG_EXTS):
+    for ext in IMG_EXTS:
         if ext in url:
-            return index
-    return -1
+            return ext
+    return None
 
-def dowload_image(url, img_name, folder_path):
-
+def download_image(url, img_name, folder_path):
     if url.startswith('data:image'):
         # If it's a base64 data URI
         img_data = url.split(',')[1]
@@ -58,18 +57,19 @@ print("Starting script...")
 driver = get_driver()
 
 # Read keywords from keywords.txt file
-with open('keywords.txt', 'r') as f:
+with open('keywords.txt', 'r', encoding='utf8') as f:
     keywords = f.readlines()
     keywords = [x.strip() for x in keywords]
     keywords = [unidecode(x).lower() for x in keywords]
 
+print(keywords)
 download_queue = [] # List of tuples (url, img_name)
 
 print("Ready!")
 for keyword in keywords:
 
-    img_tags = set() # Using a set to avoid duplicates tags
-    urls_batch = [] # List of tuples (url, img_name) for each keyword
+    img_tags = set() # Using a set to avoid duplicate tags
+    urls_batch = set() # Using a set to avoid duplicate URLs
 
     url = f"https://www.google.com/search?tbm=isch&q={keyword}"
 
@@ -77,31 +77,32 @@ for keyword in keywords:
 
     time.sleep(2) # Wait for page to load
 
-    while len(urls_batch) < LIMIT: # Loop until we get the desired amount of images
-        img_tags.update(driver.find_elements(By.CSS_SELECTOR, '[class="YQ4gaf"]:not([class~=" "])')) # Get all img tags which have only "YQ4gaf" class
+    scroll_count = 0
+    while LIMIT - len(urls_batch) > 0 and scroll_count < 10: # Loop until we get the desired amount of images or reach max scrolls
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);") # Scroll to the bottom of the page
-        time.sleep(1) # Wait for more images to load
+        time.sleep(2) # Wait for more images to load
+        img_tags.update(driver.find_elements(By.CSS_SELECTOR, '[class="YQ4gaf"]:not([class~=" "])')) # Get all img tags which have only "YQ4gaf" class
 
         for idx, tag in enumerate(img_tags):
             img_url = tag.get_attribute('src') # Get image URL in "src" attribute
             if img_url:
-                ext_index = check_url_extension(img_url)
-                if ext_index != -1:
-                    img_name = f"{keyword}_{idx}.{IMG_EXTS[ext_index]}"
-                    urls_batch.append((img_url, img_name))
+                ext = check_url_extension(img_url)
+                if ext:
+                    img_name = f"{keyword}_{len(urls_batch)}.{ext}"
+                    urls_batch.add((img_url, img_name))
 
-        if len(urls_batch) > LIMIT: # If we have more images than the LIMIT, we remove the excess and break the loop
-            urls_batch = urls_batch[:LIMIT]
-            download_queue.extend(urls_batch)
-            break
+        scroll_count += 1
+
+    if len(urls_batch) > LIMIT:
+        urls_batch = list(urls_batch)[:LIMIT] # Convert to list and limit to LIMIT
+    download_queue.extend(urls_batch)
 
 print("Downloading images...")
 for idx, (url, img_name) in enumerate(download_queue):
-    dowload_image(url, img_name, FOLDER_PATH)
+    download_image(url, img_name, FOLDER_PATH)
     print(f"Downloaded {idx+1}/{len(download_queue)} images.")
-
 
 driver.quit() # Close Chrome
 
 print("Script finished!")
-print(len(os.listdir(FOLDER_PATH)), "images downloaded.") # The number of images downloaded couldnt be the same as the LIMIT value as expected.
+print(len(os.listdir(FOLDER_PATH)), "images downloaded.") # The number of images downloaded should now match the LIMIT value as expected.

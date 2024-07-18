@@ -1,3 +1,2 @@
-cat
-dog
-bird
+đánh nhau
+chém nhau
