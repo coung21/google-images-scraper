@@ -77,8 +77,8 @@ for keyword in keywords:
 
     time.sleep(2) # Wait for page to load
 
-    scroll_count = 0
-    while LIMIT - len(urls_batch) > 0 and scroll_count < 10: # Loop until we get the desired amount of images or reach max scrolls
+    # scroll_count = 0
+    while LIMIT - len(urls_batch) > 0: # Loop until we get the desired amount of images or reach max scrolls
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);") # Scroll to the bottom of the page
         time.sleep(2) # Wait for more images to load
         img_tags.update(driver.find_elements(By.CSS_SELECTOR, '[class="YQ4gaf"]:not([class~=" "])')) # Get all img tags which have only "YQ4gaf" class
@@ -91,7 +91,7 @@ for keyword in keywords:
                     img_name = f"{keyword}_{len(urls_batch)}.{ext}"
                     urls_batch.add((img_url, img_name))
 
-        scroll_count += 1
+        # scroll_count += 1
 
     if len(urls_batch) > LIMIT:
         urls_batch = list(urls_batch)[:LIMIT] # Convert to list and limit to LIMIT
