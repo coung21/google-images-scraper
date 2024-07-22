@@ -35,10 +35,8 @@ FOLDER_PATH={your/folder/path}
 
 Step 2: Add the keywords you want to scrape into the `keywords.txt` file with one keyword per line:
 ```txt
-cat
-dog
-bird
-house
+keyword1
+keyword2
 ```
 Step 3: Run the following cmd:
 ```bash
