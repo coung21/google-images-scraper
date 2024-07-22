@@ -3,6 +3,7 @@ import time
 import base64
 import requests
 import argparse
+import random
 from unidecode import unidecode #pip install unidecode
 from dotenv import load_dotenv #pip install python-dotenv
 from selenium import webdriver #pip install selenium
@@ -12,7 +13,7 @@ load_dotenv() # Load environment variables from .env file
 
 # Get LIMIT value from cmd
 parser = argparse.ArgumentParser()
-parser.add_argument('--limit', type=int, required=True)
+parser.add_argument('--limit', type=int, default=1000, help='Number of images to download per keyword')
 args = parser.parse_args()
 LIMIT = args.limit
 
@@ -56,6 +57,8 @@ print("Starting script...")
 
 driver = get_driver()
 
+
+
 # Read keywords from keywords.txt file
 with open('keywords.txt', 'r', encoding='utf8') as f:
     keywords = f.readlines()
@@ -65,7 +68,7 @@ with open('keywords.txt', 'r', encoding='utf8') as f:
 print(keywords)
 download_queue = [] # List of tuples (url, img_name)
 
-print("Ready!")
+print("Loading....")
 for keyword in keywords:
 
     img_tags = set() # Using a set to avoid duplicate tags
@@ -76,22 +79,20 @@ for keyword in keywords:
     driver.get(url) # Open URL
 
     time.sleep(2) # Wait for page to load
-
-    # scroll_count = 0
-    while LIMIT - len(urls_batch) > 0: # Loop until we get the desired amount of images or reach max scrolls
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);") # Scroll to the bottom of the page
+    for _ in range(10):
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(2) # Wait for more images to load
-        img_tags.update(driver.find_elements(By.CSS_SELECTOR, '[class="YQ4gaf"]:not([class~=" "])')) # Get all img tags which have only "YQ4gaf" class
 
-        for idx, tag in enumerate(img_tags):
-            img_url = tag.get_attribute('src') # Get image URL in "src" attribute
-            if img_url:
-                ext = check_url_extension(img_url)
-                if ext:
-                    img_name = f"{keyword}_{len(urls_batch)}.{ext}"
-                    urls_batch.add((img_url, img_name))
-
-        # scroll_count += 1
+    img_tags.update(driver.find_elements(By.CSS_SELECTOR, '[class="YQ4gaf"]:not([class~=" "])')) # Get all img tags which have only "YQ4gaf" class
+    print(len(img_tags))
+    for idx, tag in enumerate(img_tags):
+        img_url = tag.get_attribute('src') # Get image URL in "src" attribute
+        if img_url:
+            # ext = check_url_extension(img_url)
+            # if ext:
+            img_name = f"{keyword}_{idx}_{random.randint(1, 1000)}.jpg"
+            # img_name = f"{keyword}_{len(urls_batch)}.jpg"
+            urls_batch.add((img_url, img_name))
 
     if len(urls_batch) > LIMIT:
         urls_batch = list(urls_batch)[:LIMIT] # Convert to list and limit to LIMIT

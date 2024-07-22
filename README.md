@@ -42,8 +42,13 @@ house
 ```
 Step 3: Run the following cmd:
 ```bash
-py script.py --limit {NUMBERS_OF_IMAGES}
+py script.py --limit {LIMIT}
 ```
-Note: `NUMBERS_OF_IMAGES` is the number of images you want to retrieve for each keyword.<br>
+or
+```bash
+py script.py
+```
+with the default LIMIT is `1000`.<br>
+Note: `LIMIT` is the number of images you want to retrieve for each keyword.<br>
 
 ***If you find this tool useful, please give this repo 1 star. Thank you very much ❤️***
