@@ -4,6 +4,8 @@ import base64
 import requests
 import argparse
 import random
+from PIL import Image
+from io import BytesIO
 from unidecode import unidecode #pip install unidecode
 from dotenv import load_dotenv #pip install python-dotenv
 from selenium import webdriver #pip install selenium
@@ -32,20 +34,26 @@ def check_url_extension(url):
     return None
 
 def download_image(url, img_name, folder_path):
-    if url.startswith('data:image'):
-        # If it's a base64 data URI
-        img_data = url.split(',')[1]
-        img_data = base64.b64decode(img_data)
-        with open(os.path.join(folder_path, img_name), 'wb') as f:
-            f.write(img_data)
-    else:
-        # If it's a regular URL
-        response = requests.get(url)
-        if response.status_code == 200:
-            with open(os.path.join(folder_path, img_name), 'wb') as f:
-                f.write(response.content)
+    try:
+        if url.startswith('data:image'):
+            # If it's a base64 data URI
+            img_data = url.split(',')[1]
+            img_data = base64.b64decode(img_data)
+            img = Image.open(BytesIO(img_data))
         else:
-            print(f"Failed to download image: {img_name}")
+            # If it's a regular URL
+            response = requests.get(url)
+            if response.status_code == 200:
+                img = Image.open(BytesIO(response.content))
+            else:
+                print(f"Failed to download image: {img_name}")
+                return
+        
+        # Convert image to .jpg format
+        img = img.convert('RGB')
+        img.save(os.path.join(folder_path, img_name), format='JPEG')
+    except Exception as e:
+        print(f"Error processing image {img_name}: {e}")
 
 def get_driver():
     opts = webdriver.ChromeOptions() 
@@ -56,8 +64,6 @@ def get_driver():
 print("Starting script...")
 
 driver = get_driver()
-
-
 
 # Read keywords from keywords.txt file
 with open('keywords.txt', 'r', encoding='utf8') as f:
@@ -88,10 +94,7 @@ for keyword in keywords:
     for idx, tag in enumerate(img_tags):
         img_url = tag.get_attribute('src') # Get image URL in "src" attribute
         if img_url:
-            # ext = check_url_extension(img_url)
-            # if ext:
             img_name = f"{keyword}_{idx}_{random.randint(1, 1000)}.jpg"
-            # img_name = f"{keyword}_{len(urls_batch)}.jpg"
             urls_batch.add((img_url, img_name))
 
     if len(urls_batch) > LIMIT:
